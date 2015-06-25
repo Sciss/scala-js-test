@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Scala.js Test</title>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.6.2.js"></script>
 </head>
 <body>
+<button id="click-me-button" type="button" onclick="de.sciss.scalajstest.Main().addClickedMessage()">Click me!</button>
 <!-- Include Scala.js compiled code -->
 <script type="text/javascript" src="./target/scala-2.11/scala-js-test-fastopt.js"></script>
 <!-- Run main app -->
