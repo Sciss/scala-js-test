@@ -1,27 +1,29 @@
 package de.sciss.scalajstest
 
-import org.scalajs.dom.{GainNode, AudioContext}
+import org.scalajs.dom.{AudioBuffer, Event, XMLHttpRequest, GainNode, AudioContext}
 import org.scalajs.dom.raw.{OscillatorNode, HTMLAudioElement}
-import org.scalajs.jquery.jQuery
+import org.scalajs.jquery.{jQuery => $}
 
 import scala.scalajs.js
+import scala.scalajs.js.typedarray.ArrayBuffer
 
 object Main extends js.JSApp {
   def main(): Unit =
-    jQuery(setupUI _)
+    $(setupUI _)
 
   def setupUI(): Unit = {
-    jQuery("#play-button").click(play _)
-    jQuery("#stop-button").click(stop _)
-    jQuery("#toggle-osc" ).click(toggleOscillator _)
-    jQuery("#fade-out"   ).click(fadeOut _)
-    jQuery("#fade-in"    ).click(fadeIn  _)
+    $("#play-button").click(play _)
+    $("#stop-button").click(stop _)
+    $("#toggle-osc" ).click(toggleOscillator _)
+    $("#fade-out"   ).click(fadeOut _)
+    $("#fade-in"    ).click(fadeIn  _)
+    $("#buffer-test").click(bufferTest _)
   }
 
   def addClickedMessage(): Unit =
-    jQuery("body").append("<p>Hello World</p>")
+    $("body").append("<p>Hello World</p>")
 
-  def player: HTMLAudioElement = jQuery("#player")(0).asInstanceOf[HTMLAudioElement]
+  def player: HTMLAudioElement = $("#player")(0).asInstanceOf[HTMLAudioElement]
 
   def play(): Unit = player.play()
   def stop(): Unit = player.pause()
@@ -82,5 +84,36 @@ object Main extends js.JSApp {
       osc.disconnect(gainNode)
       osc = null
     }
+  }
+
+  //////////////////
+
+  def bufferTest(): Unit = {
+    val request = new XMLHttpRequest
+    val urlToMp3File = "/staircase.mp3" // "http://sciss.de/noises2/staircase.mp3"
+    request.open("GET", url = urlToMp3File, async = true)
+    request.responseType = "arraybuffer"
+
+    def onLoad(e: Event): Unit = {
+      // val source = audioContext.createBufferSource()
+      // source.buffer = audioContext.createBuffer(request.response, false);
+      println(s"Response = ${request.response}")
+      val audioData = request.response.asInstanceOf[ArrayBuffer]  // ja?!
+
+      def gotBuffer(buffer: AudioBuffer): Unit = {
+        println("We've got an AudioBuffer, yay!")
+        val n = audioContext.createBufferSource()
+        n.buffer = buffer
+        n.connect(audioContext.destination)
+        n.start()
+      }
+
+      /* val promiseBuffer = */ audioContext.decodeAudioData(audioData, gotBuffer _)
+
+      // promiseBuffer.andThen(gotBuffer _)
+    }
+
+    request.onload = onLoad _
+    request.send()
   }
 }
